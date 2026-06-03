@@ -4,8 +4,8 @@ const cors = require("cors"); //Importamos el paquete cors
 require("dotenv").config(); //Cargamos las variables del .env
 const app = express(); //Asignamos la instancia de express a la constante app
 const puerto = process.env.PORT || 3000; //Definimos el puerto de escucha del servidor con la variables ocnfigurada en archivo .env o 3000 por defecto.
-const { obtenerJoyas, obtenerJoyasConFiltros, prepararHATEOAS } = require("./consultas"); //Importamos las funciones del archivo consultas.js
 const jwt = require("jsonwebtoken"); //Importamos el paquete jsonwebtoken
+const { registrarUsuario } = require("./consultas"); //Importamos las funciones del archivo consultas.js
 
 //middlewares
 app.use(cors()); //Habilitamos cors
@@ -17,9 +17,15 @@ app.listen(puerto, console.log(`Servidor encendido escuchando puerto ${puerto}`)
 
 //Rutas de consultas
 
+//Ruta POST para registrar usuarios
 app.post("/usuarios", async (req, res) => {
   try {
-    const usuario = req.body;
+    const usuario = req.body; //Capturamos los datos enviados por el usuario
     console.log(usuario);
-  } catch (error) {}
+    await registrarUsuario(usuario); //Llamamos a la función enviando los datos de registro
+    res.status(201).send("Usuario creado con éxito"); //Respondemos con código 201 de "creado" y un mensaje
+  } catch (error) {
+    console.log(error); //Mostramos el error devuelto por la BD en consola
+    return res.status(500).json({ message: "Internal server error" }); //Respondemos al frontend con el mensaje 500 y un mensaje en formato JSON
+  }
 });

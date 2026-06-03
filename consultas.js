@@ -31,3 +31,6 @@ const registrarUsuario = async (usuario) => {
     throw error; //Devolvemos el error a la API para que responda con el mensaje 500 de la cláusula error de la ruta GET
   }
 };
+
+// Exportamos las funciones
+module.exports = { registrarUsuario };
