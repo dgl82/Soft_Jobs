@@ -16,3 +16,10 @@ app.use(morgan("dev")); //Habilitamos el middleware morgan
 app.listen(puerto, console.log(`Servidor encendido escuchando puerto ${puerto}`));
 
 //Rutas de consultas
+
+app.post("/usuarios", async (req, res) => {
+  try {
+    const usuario = req.body;
+    console.log(usuario);
+  } catch (error) {}
+});
