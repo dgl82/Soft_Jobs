@@ -1,14 +1,7 @@
-//Importamos la clase Pool del paquete pg
-
-const { Pool } = require("pg");
-
-//Importamos el paquete pg-format
-
-const format = require("pg-format");
-
-//Importamos el paquete "dotenv"
-
-require("dotenv").config();
+const { Pool } = require("pg"); //Importamos la clase Pool del paquete pg
+const format = require("pg-format"); //Importamos el paquete pg-format
+require("dotenv").config(); //Importamos el paquete "dotenv"
+const bcrypt = require("bcryptjs"); //Importamos el paquete bcrypt para encriptar contraseñas
 
 //Creamos una instancia de la clase Pool usando un objeto de configuración con variables de entorno del archivo .env
 
@@ -21,3 +14,5 @@ const pool = new Pool({
 });
 
 //Funciones para consultas SQL
+
+//Función para registrar usuarios con password encriptado
