@@ -6,7 +6,7 @@ const app = express(); //Asignamos la instancia de express a la constante app
 const puerto = process.env.PORT || 3000; //Definimos el puerto de escucha del servidor con la variables ocnfigurada en archivo .env o 3000 por defecto.
 const jwt = require("jsonwebtoken"); //Importamos el paquete jsonwebtoken
 const { registrarUsuario } = require("./consultas"); //Importamos las funciones del archivo consultas.js
-const { verificarCredenciales } = require("./middlewares"); //Importamos middlewares
+const { verificarRegistro, verificarLogin, verificarCredenciales } = require("./middlewares"); //Importamos middlewares
 
 //middlewares
 app.use(cors()); //Habilitamos cors
@@ -19,7 +19,7 @@ app.listen(puerto, console.log(`Servidor encendido escuchando puerto ${puerto}`)
 //Rutas de consultas
 
 //Ruta POST para registrar usuarios
-app.post("/usuarios", verificarCredenciales, async (req, res) => {
+app.post("/usuarios", async (req, res) => {
   try {
     const usuario = req.body; //Capturamos los datos enviados por el usuario
     await registrarUsuario(usuario); //Llamamos a la función enviando los datos de registro
@@ -28,4 +28,14 @@ app.post("/usuarios", verificarCredenciales, async (req, res) => {
     console.log(error); //Mostramos el error devuelto por la BD en consola
     return res.status(500).json({ message: "Internal server error" }); //Respondemos al frontend con el mensaje 500 y un mensaje en formato JSON
   }
+});
+
+//Ruta POST para login
+//Usamos el middleware para comprobar que existe el correo de la solicitud en la BD
+app.post("/login", verificarCredenciales, async (req, res) => {
+  try {
+    const { email, password } = req.body; //Extraemos el email y password del body de la solicitud
+    const token = jwt.sign({ email }, "llave_screta"); //Generamos token mediante sign y usamos el email del usuario como payload
+    res.status(200).send(token); //Enviamos el token de vuelta al frontend y código 200 (OK)
+  } catch (error) {}
 });
