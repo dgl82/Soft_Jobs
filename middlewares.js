@@ -1,5 +1,6 @@
 const bcrypt = require("bcryptjs"); //Importamos paquete de encriptación para las contraseñas
 const { Pool } = require("pg"); //Importamos la clase pool del paquete pg
+const jwt = require("jsonwebtoken"); //Importamos el paquete jsonwebtoken
 
 //Creamos una instancia de la clase Pool usando un objeto de configuración con variables de entorno del archivo .env
 const pool = new Pool({
@@ -36,12 +37,50 @@ const verificarCredenciales = async (req, res, next) => {
       return res.status(401).json({ message: "Email o contraseña incorrecta" }); //Respondemos mensaje 401 (No autorizado) y mensaje sin dar pistas
     }
 
-    next(); //Damos continuidad a la función que llamó el middleware
+    next(); //Damos continuidad a la ruta que llamó el middleware
   } catch (error) {
     console.error("Error en el middleware de credenciales:", error); //Mostramos error en consola del servidor
-    return res.status(500).json({ message: "Error interno del servidor" }); //Interrumpimos la función que llamó el middleware y devolvemos error 500 con mensaje
+    return res.status(500).json({ message: "Error interno del servidor" }); //Interrumpimos la ruta que llamó el middleware y devolvemos error 500 con mensaje
   }
 };
+
+//Middleware para verificar la existencia de credenciales en BD en registro usuario
+
+const verificarEmailExistente = async (req, res, next) => {
+  try {
+    const { email } = req.body; //Extraemos el email del body de la solicitud de registro
+    const consulta = "SELECT * FROM usuarios WHERE email = $1"; //Declaramos la consulta SQL a la BD
+    const { rowCount } = await pool.query(consulta, [email]); //Extraemos rowcount de la respuesta para saber si existe (=1) o no (=0)
+
+    if (rowCount > 0) {
+      //Si rowcount es 1, el correo ya existe
+      return res.status(400).json({ message: "El usuario ya está registrado" }); //Interrumpimos la ruta que llamó el middleware y devolvemos error 400 (petición incorrecta) y mensaje JDON
+    }
+
+    next(); //Si el correo no existe, la ruta que llamó el middleware continúa
+  } catch (error) {
+    console.error("Error en el middleware de verificar email:", error); //Mostramos error en consola del servidor
+    return res.status(500).json({ message: "Error interno del servidor" }); //Interrumpimos la ruta que llamó el middleware y devolvemos error 500 con mensaje
+  }
+};
+
+//Middleware para validar el token
+
+const validarToken = (req, res, next) => {
+  try {
+    const Authorization = req.header("Authorization"); //Accedemos al header "authorization"
+    const token = Authorization.split("Bearer ")[1]; //Extraemos el token de la cabecera de la solicitud
+    jwt.verify(token, "llave_secreta"); //Verificamos el token
+    const { email } = jwt.decode(token); //Decodificamos el token y extraemos el payload (email)
+    req.emailUsuario = email; // Pasamos el email de contrabando hacia la ruta
+    next(); //Damos continuidad a la ruta que llamó el middleware
+  } catch (error) {
+    console.error("Error en la validación del token:", error.message); //Mostramos error en consola del servidor
+    return res.status(401).json({ message: "Token inválido o expirado" }); //Interrumpimos la ruta que llamó el middleware y devolvemos error 500 con mensaje
+  }
+};
+// Exportamos los middlewares
+module.exports = { verificarCredenciales, verificarEmailExistente, validarToken };
 
 ////////////////////////////////////////////////////
 const verificarRegistro = (req, res, next) => {
@@ -80,6 +119,3 @@ const verificarLogin = (req, res, next) => {
 
   next(); //Permitimos que la función que llamó éste middleware continúe con su ejecución
 };
-
-// Exportamos los middlewares
-module.exports = { verificarCredenciales };

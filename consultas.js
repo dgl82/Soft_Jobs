@@ -28,9 +28,23 @@ const registrarUsuario = async (usuario) => {
     await pool.query(consulta, values); //Realizamos la consulta a la BD
   } catch (error) {
     console.error("Error al registrar usuario en la base de datos:", error.message); //Mostramos un mensaje por consola con el detalle del error
+    throw error; //Devolvemos el error a la API para que responda con el mensaje 500 de la cláusula error de la ruta POST
+  }
+};
+
+//Función para buscar el usuario
+
+const buscarUsuario = async (email) => {
+  try {
+    const values = [email]; //Guardamos el email en values para parametrizarlo
+    const consulta = "SELECT email, rol, lenguage FROM usuarios WHERE email = $1"; //Realizamos consulta SQL parametrizada
+    const { rows: usuario } = await pool.query(consulta, values); //El arreglo "rows" de la respuesta lo renombramos a usuario
+    return usuario; //Devolvemos los datos del usuario
+  } catch (error) {
+    console.error("Error al buscar usuario en la base de datos:", error.message); //Mostramos un mensaje por consola con el detalle del error
     throw error; //Devolvemos el error a la API para que responda con el mensaje 500 de la cláusula error de la ruta GET
   }
 };
 
 // Exportamos las funciones
-module.exports = { registrarUsuario };
+module.exports = { registrarUsuario, buscarUsuario };
