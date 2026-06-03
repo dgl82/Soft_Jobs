@@ -25,21 +25,21 @@ const verificarCredenciales = async (req, res, next) => {
     } = await pool.query(consulta, values);
 
     if (!rowCount) {
-      //Comprobamos si el usuario existe. Si no existe (rowcount = 0) se detiene la función que llama el middleware con return
+      //Comprobamos si el usuario existe. Si no existe (rowcount = 0) se detiene la ruta que llama el middleware con return
       return res.status(401).json({ message: "Email o contraseña incorrecta" }); //Respondemos mensaje 401 (No autorizado) y mensaje sin dar pistas
     }
-    //Extraemos la contraseña encriptada del objeto respondido por la BD y la renombramos a "passwordEncriptada"
-    const { password: passwordEncriptada } = usuario;
+    //Si rowcount = 1 extraemos la contraseña encriptada del objeto respondido por la BD y la renombramos a "passwordEncriptada"
+    const { password: passwordEncriptada } = usuario; //Extraemos el password encriptado de la respuesta de la consulta y lo renombramos
     const passwordEsCorrecta = bcrypt.compareSync(password, passwordEncriptada); //Comparamos el password introducido por el usuario con el encriptado en BD
 
     if (!passwordEsCorrecta) {
-      //Si el resultado de la operación anterior es "False" el middleware detiene la función que lo llamó
+      //Si el resultado de la operación anterior es "False" el middleware detiene la ruta que lo llamó
       return res.status(401).json({ message: "Email o contraseña incorrecta" }); //Respondemos mensaje 401 (No autorizado) y mensaje sin dar pistas
     }
 
     next(); //Damos continuidad a la ruta que llamó el middleware
   } catch (error) {
-    console.error("Error en el middleware de credenciales:", error); //Mostramos error en consola del servidor
+    console.error("Error en el middleware verificarCredenciales", error); //Mostramos error en consola del servidor
     return res.status(500).json({ message: "Error interno del servidor" }); //Interrumpimos la ruta que llamó el middleware y devolvemos error 500 con mensaje
   }
 };
@@ -50,7 +50,7 @@ const verificarEmailExistente = async (req, res, next) => {
   try {
     const { email } = req.body; //Extraemos el email del body de la solicitud de registro
     const consulta = "SELECT * FROM usuarios WHERE email = $1"; //Declaramos la consulta SQL a la BD
-    const { rowCount } = await pool.query(consulta, [email]); //Extraemos rowcount de la respuesta para saber si existe (=1) o no (=0)
+    const { rowCount } = await pool.query(consulta, [email]); //Extraemos rowcount de la respuesta para saber si existe "=1" o no "=0"
 
     if (rowCount > 0) {
       //Si rowcount es 1, el correo ya existe
@@ -59,7 +59,7 @@ const verificarEmailExistente = async (req, res, next) => {
 
     next(); //Si el correo no existe, la ruta que llamó el middleware continúa
   } catch (error) {
-    console.error("Error en el middleware de verificar email:", error); //Mostramos error en consola del servidor
+    console.error("Error en el middleware verificarEmailExistente", error); //Mostramos error en consola del servidor
     return res.status(500).json({ message: "Error interno del servidor" }); //Interrumpimos la ruta que llamó el middleware y devolvemos error 500 con mensaje
   }
 };
@@ -75,7 +75,8 @@ const validarToken = (req, res, next) => {
     req.emailUsuario = email; // Pasamos el email de contrabando hacia la ruta
     next(); //Damos continuidad a la ruta que llamó el middleware
   } catch (error) {
-    console.error("Error en la validación del token:", error.message); //Mostramos error en consola del servidor
+    //Si el proceso de validación del token falla
+    console.error("Error en el middleware validarToken", error.message); //Mostramos error en consola del servidor
     return res.status(401).json({ message: "Token inválido o expirado" }); //Interrumpimos la ruta que llamó el middleware y devolvemos error 500 con mensaje
   }
 };

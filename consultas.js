@@ -27,7 +27,7 @@ const registrarUsuario = async (usuario) => {
     const consulta = "INSERT INTO usuarios values (DEFAULT, $1, $2, $3, $4)"; //Consulta SQL parametrizada para guardar datos en la base de datos
     await pool.query(consulta, values); //Realizamos la consulta a la BD
   } catch (error) {
-    console.error("Error al registrar usuario en la base de datos:", error.message); //Mostramos un mensaje por consola con el detalle del error
+    console.error("Error al registrar usuario en la base de datos", error.message); //Mostramos un mensaje por consola con el detalle del error
     throw error; //Devolvemos el error a la API para que responda con el mensaje 500 de la cláusula error de la ruta POST
   }
 };
@@ -41,7 +41,7 @@ const buscarUsuario = async (email) => {
     const { rows: usuario } = await pool.query(consulta, values); //El arreglo "rows" de la respuesta lo renombramos a usuario
     return usuario; //Devolvemos los datos del usuario
   } catch (error) {
-    console.error("Error al buscar usuario en la base de datos:", error.message); //Mostramos un mensaje por consola con el detalle del error
+    console.error("Error al buscar usuario en la base de datos", error.message); //Mostramos un mensaje por consola con el detalle del error
     throw error; //Devolvemos el error a la API para que responda con el mensaje 500 de la cláusula error de la ruta GET
   }
 };

@@ -44,6 +44,7 @@ app.post("/login", verificarCredenciales, async (req, res) => {
 });
 
 //Ruta GET para /usuarios
+//Usamos el middleware para validar el token
 app.get("/usuarios", validarToken, async (req, res) => {
   try {
     const email = req.emailUsuario;
