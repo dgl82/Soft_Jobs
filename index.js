@@ -6,6 +6,7 @@ const app = express(); //Asignamos la instancia de express a la constante app
 const puerto = process.env.PORT || 3000; //Definimos el puerto de escucha del servidor con la variables ocnfigurada en archivo .env o 3000 por defecto.
 const jwt = require("jsonwebtoken"); //Importamos el paquete jsonwebtoken
 const { registrarUsuario } = require("./consultas"); //Importamos las funciones del archivo consultas.js
+const { verificarCredenciales } = require("./middlewares"); //Importamos middlewares
 
 //middlewares
 app.use(cors()); //Habilitamos cors
@@ -18,10 +19,9 @@ app.listen(puerto, console.log(`Servidor encendido escuchando puerto ${puerto}`)
 //Rutas de consultas
 
 //Ruta POST para registrar usuarios
-app.post("/usuarios", async (req, res) => {
+app.post("/usuarios", verificarCredenciales, async (req, res) => {
   try {
     const usuario = req.body; //Capturamos los datos enviados por el usuario
-    console.log(usuario);
     await registrarUsuario(usuario); //Llamamos a la función enviando los datos de registro
     res.status(201).send("Usuario creado con éxito"); //Respondemos con código 201 de "creado" y un mensaje
   } catch (error) {
